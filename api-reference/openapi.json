@@ -1,217 +1,635 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+      "title": "Plugit Chat API - v2 (Simplified)",
+      "version": "2.0.0",
+      "description": "Minimal partner API surface for creating agents and deploying to WhatsApp.\n"
   },
   "servers": [
-    {
-      "url": "http://sandbox.mintlify.com"
-    }
+      {
+          "url": "https://api.plugit.chat",
+          "description": "Production"
+      },
+      {
+          "url": "https://sandbox.api.plugit.chat",
+          "description": "Sandbox"
+      }
   ],
   "security": [
-    {
-      "bearerAuth": []
-    }
+      {
+          "bearerAuth": []
+      }
   ],
-  "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+      "securitySchemes": {
+          "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "API Key"
           }
-        }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+      "headers": {
+          "RateLimit-Limit": {
+              "description": "The request quota for the current window for this key.",
+              "schema": {
+                  "type": "integer",
+                  "format": "int64"
               }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
           },
-          "message": {
-            "type": "string"
+          "RateLimit-Remaining": {
+              "description": "The remaining requests in the current window for this key.",
+              "schema": {
+                  "type": "integer",
+                  "format": "int64"
+              }
+          },
+          "RateLimit-Reset": {
+              "description": "Epoch seconds when the current window resets.",
+              "schema": {
+                  "type": "integer",
+                  "format": "int64"
+              }
           }
-        }
+      },
+      "parameters": {
+          "AgentId": {
+              "name": "agent_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                  "type": "string",
+                  "pattern": "^agt_[A-Za-z0-9]+"
+              },
+              "description": "Agent identifier."
+          },
+          "OnboardingId": {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                  "type": "string",
+                  "pattern": "^ob_[A-Za-z0-9]+"
+              },
+              "description": "Onboarding identifier."
+          },
+          "IdempotencyKey": {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                  "type": "string",
+                  "maxLength": 128
+              },
+              "description": "Provide to make POST/PATCH requests idempotent within 24h."
+          }
+      },
+      "responses": {
+          "Problem": {
+              "description": "Error response",
+              "content": {
+                  "application/problem+json": {
+                      "schema": {
+                          "$ref": "#/components/schemas/Problem"
+                      }
+                  }
+              }
+          },
+          "Unauthorized": {
+              "description": "Authentication failed or missing",
+              "content": {
+                  "application/problem+json": {
+                      "schema": {
+                          "$ref": "#/components/schemas/Problem"
+                      }
+                  }
+              }
+          },
+          "NotFound": {
+              "description": "Resource not found",
+              "content": {
+                  "application/problem+json": {
+                      "schema": {
+                          "$ref": "#/components/schemas/Problem"
+                      }
+                  }
+              }
+          }
+      },
+      "schemas": {
+          "Problem": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                  "type": {
+                      "type": "string",
+                      "format": "uri"
+                  },
+                  "title": {
+                      "type": "string"
+                  },
+                  "status": {
+                      "type": "integer"
+                  },
+                  "detail": {
+                      "type": "string"
+                  },
+                  "instance": {
+                      "type": "string"
+                  }
+              },
+              "required": [
+                  "type",
+                  "title",
+                  "status"
+              ]
+          },
+          "Agent": {
+              "type": "object",
+              "properties": {
+                  "id": {
+                      "type": "string",
+                      "pattern": "^agt_[A-Za-z0-9]+"
+                  },
+                  "title": {
+                      "type": "string"
+                  },
+                  "prompt": {
+                      "type": "string",
+                      "nullable": true
+                  },
+                  "knowledge": {
+                      "type": "string",
+                      "nullable": true
+                  },
+                  "tools": {
+                      "type": "array",
+                      "description": "Configured tools for this agent.",
+                      "items": {
+                          "$ref": "#/components/schemas/Tool"
+                      }
+                  },
+                  "delay": {
+                      "type": "number",
+                      "nullable": true
+                  },
+                  "categories": {
+                      "type": "array",
+                      "description": "Conversation categories and routing rules.",
+                      "items": {
+                          "$ref": "#/components/schemas/Category"
+                      }
+                  },
+                  "version": {
+                      "type": "string"
+                  },
+                  "enabled": {
+                      "type": "boolean",
+                      "default": true
+                  },
+                  "default_language": {
+                      "type": "string"
+                  },
+                  "external_id": {
+                      "type": "string",
+                      "nullable": true
+                  },
+                  "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                  },
+                  "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                  }
+              },
+              "required": [
+                  "id",
+                  "title",
+                  "version",
+                  "enabled",
+                  "default_language",
+                  "created_at",
+                  "updated_at"
+              ]
+          },
+          "AgentCreateRequest": {
+              "type": "object",
+              "properties": {
+                  "title": {
+                      "type": "string"
+                  },
+                  "prompt": {
+                      "type": "string",
+                      "nullable": true
+                  },
+                  "knowledge": {
+                      "type": "string",
+                      "nullable": true
+                  },
+                  "tools": {
+                      "type": "array",
+                      "items": {
+                          "$ref": "#/components/schemas/Tool"
+                      }
+                  },
+                  "delay": {
+                      "type": "number",
+                      "nullable": true
+                  },
+                  "categories": {
+                      "type": "array",
+                      "items": {
+                          "$ref": "#/components/schemas/Category"
+                      }
+                  },
+                  "version": {
+                      "type": "string"
+                  },
+                  "enabled": {
+                      "type": "boolean",
+                      "default": true
+                  },
+                  "default_language": {
+                      "type": "string"
+                  },
+                  "external_id": {
+                      "type": "string",
+                      "nullable": true
+                  }
+              },
+              "required": [
+                  "title",
+                  "prompt",
+                  "version"
+              ]
+          },
+          "AgentUpdateRequest": {
+              "type": "object",
+              "description": "Update an agent by id. This simplified API accepts the id in the payload.",
+              "properties": {
+                  "id": {
+                      "type": "string",
+                      "pattern": "^agt_[A-Za-z0-9]+"
+                  },
+                  "title": {
+                      "type": "string"
+                  },
+                  "prompt": {
+                      "type": "string",
+                      "nullable": true
+                  },
+                  "knowledge": {
+                      "type": "string",
+                      "nullable": true
+                  },
+                  "tools": {
+                      "type": "array",
+                      "items": {
+                          "$ref": "#/components/schemas/Tool"
+                      }
+                  },
+                  "delay": {
+                      "type": "number",
+                      "nullable": true
+                  },
+                  "categories": {
+                      "type": "array",
+                      "items": {
+                          "$ref": "#/components/schemas/Category"
+                      }
+                  },
+                  "version": {
+                      "type": "string"
+                  },
+                  "enabled": {
+                      "type": "boolean"
+                  },
+                  "default_language": {
+                      "type": "string"
+                  },
+                  "external_id": {
+                      "type": "string",
+                      "nullable": true
+                  }
+              },
+              "required": [
+                  "id"
+              ]
+          },
+          "AgentsListResponse": {
+              "type": "object",
+              "properties": {
+                  "data": {
+                      "type": "array",
+                      "items": {
+                          "$ref": "#/components/schemas/Agent"
+                      }
+                  }
+              }
+          },
+          "Onboarding": {
+              "type": "object",
+              "properties": {
+                  "id": {
+                      "type": "string",
+                      "pattern": "^ob_[A-Za-z0-9]+"
+                  },
+                  "status": {
+                      "type": "string",
+                      "enum": [
+                          "pending",
+                          "phone_linked",
+                          "ready",
+                          "failed"
+                      ]
+                  }
+              }
+          },
+          "OnboardingCreated": {
+              "type": "object",
+              "properties": {
+                  "id": {
+                      "type": "string",
+                      "pattern": "^ob_[A-Za-z0-9]+"
+                  }
+              },
+              "required": [
+                  "id"
+              ]
+          },
+          "Tool": {
+              "type": "object",
+              "description": "Agent tool configuration.",
+              "properties": {
+                  "type": {
+                      "type": "string",
+                      "enum": [
+                          "customApi"
+                      ],
+                      "description": "Type of tool. Only 'customApi' is supported currently."
+                  },
+                  "customApi": {
+                      "$ref": "#/components/schemas/CustomApiToolConfig"
+                  }
+              },
+              "required": [
+                  "type",
+                  "customApi"
+              ]
+          },
+          "CustomApiToolConfig": {
+              "type": "object",
+              "description": "Configuration for a custom API tool.",
+              "properties": {
+                  "endpoints": {
+                      "type": "array",
+                      "description": "Array of endpoint definitions (OpenAPI-compatible JSON Schemas).",
+                      "items": {
+                          "type": "object",
+                          "additionalProperties": true
+                      }
+                  }
+              },
+              "required": [
+                  "endpoints"
+              ]
+          },
+          "Category": {
+              "type": "object",
+              "description": "Conversation category definition and routing options.",
+              "properties": {
+                  "title": {
+                      "type": "string"
+                  },
+                  "criteria": {
+                      "type": "string",
+                      "description": "Criteria used to classify conversations into this category."
+                  },
+                  "webhook": {
+                      "type": "object",
+                      "description": "Webhook schema (OpenAPI-compatible/JSON Schema).",
+                      "additionalProperties": true
+                  },
+                  "disableAI": {
+                      "type": "boolean"
+                  },
+                  "skipReply": {
+                      "type": "boolean"
+                  }
+              },
+              "required": [
+                  "title"
+              ]
+          },
+          "WhatsappSandbox": {
+              "type": "object",
+              "properties": {
+                  "id": {
+                      "type": "string",
+                      "pattern": "^sbx_[A-Za-z0-9]+"
+                  },
+                  "phone_number": {
+                      "type": "string"
+                  }
+              }
+          }
       }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+  },
+  "paths": {
+      "/v2/agents": {
+          "post": {
+              "summary": "Create an agent",
+              "parameters": [
+                  {
+                      "$ref": "#/components/parameters/IdempotencyKey"
+                  }
+              ],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/AgentCreateRequest"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "201": {
+                      "description": "Created",
+                      "headers": {
+                          "RateLimit-Limit": {
+                              "$ref": "#/components/headers/RateLimit-Limit"
+                          },
+                          "RateLimit-Remaining": {
+                              "$ref": "#/components/headers/RateLimit-Remaining"
+                          },
+                          "RateLimit-Reset": {
+                              "$ref": "#/components/headers/RateLimit-Reset"
+                          }
+                      },
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Agent"
+                              }
+                          }
+                      }
+                  },
+                  "400": {
+                      "$ref": "#/components/responses/Problem"
+                  },
+                  "401": {
+                      "$ref": "#/components/responses/Unauthorized"
+                  }
+              }
+          },
+          "patch": {
+              "summary": "Update an agent (simplified)",
+              "parameters": [
+                  {
+                      "$ref": "#/components/parameters/IdempotencyKey"
+                  }
+              ],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/AgentUpdateRequest"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "200": {
+                      "description": "Updated",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Agent"
+                              }
+                          }
+                      }
+                  },
+                  "400": {
+                      "$ref": "#/components/responses/Problem"
+                  },
+                  "401": {
+                      "$ref": "#/components/responses/Unauthorized"
+                  },
+                  "404": {
+                      "$ref": "#/components/responses/NotFound"
+                  }
+              }
+          },
+          "get": {
+              "summary": "List agents",
+              "responses": {
+                  "200": {
+                      "description": "Success",
+                      "headers": {
+                          "RateLimit-Limit": {
+                              "$ref": "#/components/headers/RateLimit-Limit"
+                          },
+                          "RateLimit-Remaining": {
+                              "$ref": "#/components/headers/RateLimit-Remaining"
+                          },
+                          "RateLimit-Reset": {
+                              "$ref": "#/components/headers/RateLimit-Reset"
+                          }
+                      },
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/AgentsListResponse"
+                              }
+                          }
+                      }
+                  },
+                  "401": {
+                      "$ref": "#/components/responses/Unauthorized"
+                  }
+              }
+          }
+      },
+      "/v2/agents/{agent_id}/whatsapp-onboardings": {
+          "post": {
+              "summary": "Create a WhatsApp onboarding for this agent",
+              "parameters": [
+                  {
+                      "$ref": "#/components/parameters/AgentId"
+                  }
+              ],
+              "responses": {
+                  "201": {
+                      "description": "Created",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/OnboardingCreated"
+                              }
+                          }
+                      }
+                  },
+                  "404": {
+                      "$ref": "#/components/responses/NotFound"
+                  }
+              }
+          }
+      },
+      "/v2/agents/{agent_id}/whatsapp-onboardings/{id}": {
+          "get": {
+              "summary": "Get WhatsApp onboarding status",
+              "parameters": [
+                  {
+                      "$ref": "#/components/parameters/AgentId"
+                  },
+                  {
+                      "$ref": "#/components/parameters/OnboardingId"
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": "Success",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Onboarding"
+                              }
+                          }
+                      }
+                  },
+                  "404": {
+                      "$ref": "#/components/responses/NotFound"
+                  }
+              }
+          }
+      },
+      "/v2/agents/{agent_id}/whatsapp-sandbox": {
+          "get": {
+              "summary": "Get WhatsApp sandbox",
+              "parameters": [
+                  {
+                      "$ref": "#/components/parameters/AgentId"
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": "Success",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/WhatsappSandbox"
+                              }
+                          }
+                      }
+                  },
+                  "404": {
+                      "$ref": "#/components/responses/NotFound"
+                  }
+              }
+          }
       }
-    }
   }
 }
