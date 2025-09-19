@@ -9,44 +9,93 @@
   },
   "favicon": "/favicon.png",
   "navigation": {
-    "tabs": [
+    "languages": [
       {
-        "tab": "User Guides",
-        "groups": [
+        "language": "en",
+        "tabs": [
           {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart"
+            "tab": "User Guides",
+            "groups": [
+              {
+                "group": "Getting started",
+                "pages": [
+                  "index",
+                  "quickstart"
+                ]
+              },
+              {
+                "group": "Tutorials",
+                "pages": [
+                  "tutorials/human-handoff"
+                ]
+              }
             ]
           },
           {
-            "group": "Tutorials",
-            "pages": [
-              "tutorials/human-handoff",
-              "tutorials/human-handoff-es"
+            "tab": "API reference",
+            "groups": [
+              {
+                "group": "Agents",
+                "pages": [
+                  "api-reference/endpoint/create",
+                  "api-reference/endpoint/get",
+                  "api-reference/endpoint/update",
+                  "api-reference/endpoint/list"
+                ]
+              },
+              {
+                "group": "WhatsApp",
+                "pages": [
+                  "api-reference/endpoint/sandbox",
+                  "api-reference/endpoint/deploy",
+                  "api-reference/endpoint/status"
+                ]
+              }
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
-        "groups": [
+        "language": "es",
+        "tabs": [
           {
-            "group": "Agents",
-            "pages": [
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/update",
-              "api-reference/endpoint/list"
+            "tab": "Guías",
+            "groups": [
+              {
+                "group": "Primeros pasos",
+                "pages": [
+                  "es/index",
+                  "es/quickstart"
+                ]
+              },
+              {
+                "group": "Tutoriales",
+                "pages": [
+                  "es/tutorials/human-handoff"
+                ]
+              }
             ]
           },
           {
-            "group": "WhatsApp",
-            "pages": [
-              "api-reference/endpoint/sandbox",
-              "api-reference/endpoint/deploy",
-              "api-reference/endpoint/status"
+            "tab": "Referencia API",
+            "groups": [
+              {
+                "group": "Agentes",
+                "pages": [
+                  "api-reference/endpoint/create",
+                  "api-reference/endpoint/get",
+                  "api-reference/endpoint/update",
+                  "api-reference/endpoint/list"
+                ]
+              },
+              {
+                "group": "WhatsApp",
+                "pages": [
+                  "api-reference/endpoint/sandbox",
+                  "api-reference/endpoint/deploy",
+                  "api-reference/endpoint/status"
+                ]
+              }
             ]
           }
         ]

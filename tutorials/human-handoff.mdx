@@ -98,10 +98,10 @@ app.post("/webhooks/human-handoff", express.json(), async (req, res) => {
 });
 ```
 
-## Step 3: Track and route handoffs to the right people
+## Step 3: Track and route handoffs to the right customer
 
 - Store each webhook event and display a queue of conversations requiring human attention.
-- Show the requester’s `name`, `phone_number`, `summary`, `reason`, and when (`created_at`).
+- Show in your backoffice the requester’s `name`, `phone_number`, `summary`, `reason`, and when (`created_at`).
 - Provide a one-click button in your backoffice to continue the chat in WhatsApp using the `phone_number`:
 
 ```tsx

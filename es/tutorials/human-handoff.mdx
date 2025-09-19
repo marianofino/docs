@@ -1,6 +1,6 @@
 ---
- title: Derivación a humano (Human handoff)
- description: Deriva conversaciones a un humano clasificándolas en una categoría y disparando un webhook.
+ title: Derivación a Humano
+ description: Deriva conversaciones a un humano (human handoff) clasificándolas en una categoría y disparando un webhook.
 ---
 
 Los agentes de Plugit.chat pueden clasificar conversaciones en categorías usando IA. Proporcionas una categoría con un criterio claro; cuando una conversación coincide, el agente asigna esa categoría y dispara un webhook (si está configurado).
@@ -93,15 +93,15 @@ Ejemplo de handler:
 // Ejemplo con Express.js
 app.post("/webhooks/human-handoff", express.json(), async (req, res) => {
   const { agent, name, phone_number, summary, reason, created_at } = req.body;
-  // TODO: enrutar al equipo correcto, encolar para agente humano, notificar, etc.
+  // TODO: enrutar al cliente correcto, encolar para agente humano, notificar, etc.
   res.status(204).send();
 });
 ```
 
-## Paso 3: Seguimiento y ruteo al equipo correcto
+## Paso 3: Seguimiento y ruteo al cliente correcto
 
 - Guarda cada evento del webhook y muestra una cola de conversaciones que requieren atención humana.
-- Muestra `name`, `phone_number`, `summary`, `reason` y `created_at`.
+- Muestra en tu backoffice `name`, `phone_number`, `summary`, `reason` y `created_at`.
 - Agrega un botón en tu backoffice para continuar el chat en WhatsApp usando `phone_number`:
 
 ```tsx
