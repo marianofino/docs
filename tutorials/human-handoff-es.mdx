@@ -1,0 +1,117 @@
+---
+ title: Derivación a humano (Human handoff)
+ description: Deriva conversaciones a un humano clasificándolas en una categoría y disparando un webhook.
+---
+
+Los agentes de Plugit.chat pueden clasificar conversaciones en categorías usando IA. Proporcionas una categoría con un criterio claro; cuando una conversación coincide, el agente asigna esa categoría y dispara un webhook (si está configurado).
+
+Un caso común es la derivación a humano (human handoff). A continuación, una configuración mínima.
+
+## Paso 1: Agrega la categoría human_handoff a tu agente
+
+- **Objetivo**: clasificar conversaciones que requieren que una persona se haga cargo.
+- **Ejemplo de criterio**: "Si el agente no sabe la respuesta, o el usuario pide hablar con un humano."
+- **Opcional**: establece `disableAI: true` para que el agente deje de responder una vez clasificado, garantizando que una persona continúe.
+
+Crea o actualiza tu agente con la categoría y el webhook:
+
+```json
+POST https://api.plugit.chat/v2/agents
+Authorization: Bearer <API_KEY>
+Content-Type: application/json
+
+{
+  "title": "Bot de Soporte",
+  "prompt": "Sé útil y conciso",
+  "version": "lg-gpt-4.1-v3",
+  "categories": [
+    {
+      "title": "human_handoff",
+      "criteria": "Si el agente no sabe qué responder o el usuario pide un humano.",
+      "webhook": {
+        "url": "https://tuapp.ejemplo.com/webhooks/human-handoff",
+        "headers": { "x-api-key": "<secret>" }
+      },
+      "disableAI": true
+    }
+  ],
+  "default_language": "es"
+}
+```
+
+O actualiza un agente existente:
+
+```json
+PATCH https://api.plugit.chat/v2/agents
+Authorization: Bearer <API_KEY>
+Content-Type: application/json
+
+{
+  "id": "agt_123",
+  "categories": [
+    {
+      "title": "human_handoff",
+      "criteria": "Si el agente no sabe qué responder o el usuario pide un humano.",
+      "webhook": {
+        "url": "https://tuapp.ejemplo.com/webhooks/human-handoff",
+        "headers": { "x-api-key": "<secret>" }
+      },
+      "disableAI": true
+    }
+  ]
+}
+```
+
+Campos del esquema de categoría:
+- `title` (requerido): identificador de categoría, por ejemplo `human_handoff`.
+- `criteria` (recomendado): regla en lenguaje natural usada por la IA para clasificar.
+- `webhook.url` (recomendado): adonde enviamos (POST) los eventos de clasificación.
+- `webhook.headers` (opcional): headers estáticos a incluir.
+- `disableAI` (opcional): al ser true, el agente no seguirá respondiendo tras la clasificación.
+
+## Paso 2: Maneja el webhook
+
+Cuando una conversación se clasifica como `human_handoff`, llamamos a tu webhook con este JSON en el body:
+
+```json
+{
+  "agent": {
+    "id": "agt_123",
+    "external_id": "crm-42"
+  },
+  "name": "Jane Doe",
+  "phone_number": "+15551234567",
+  "summary": "La persona pidió hablar con un humano.",
+  "reason": "criteria_matched: user_requested_human",
+  "created_at": "2025-09-19T12:34:56Z"
+}
+```
+
+Ejemplo de handler:
+
+```typescript
+// Ejemplo con Express.js
+app.post("/webhooks/human-handoff", express.json(), async (req, res) => {
+  const { agent, name, phone_number, summary, reason, created_at } = req.body;
+  // TODO: enrutar al equipo correcto, encolar para agente humano, notificar, etc.
+  res.status(204).send();
+});
+```
+
+## Paso 3: Seguimiento y ruteo al equipo correcto
+
+- Guarda cada evento del webhook y muestra una cola de conversaciones que requieren atención humana.
+- Muestra `name`, `phone_number`, `summary`, `reason` y `created_at`.
+- Agrega un botón en tu backoffice para continuar el chat en WhatsApp usando `phone_number`:
+
+```tsx
+// Botón con deep link (web)
+const href = `https://api.whatsapp.com/send?phone=${encodeURIComponent(phone_number)}&text=${encodeURIComponent("Hola, continúo con tu solicitud.")}`;
+<a href={href} target="_blank" rel="noreferrer">Abrir chat de WhatsApp</a>
+```
+
+## Notas
+
+- Los llamados al webhook incluyen los headers que definas en la configuración de la categoría.
+- Usa idempotencia con POST/PATCH mediante `Idempotency-Key` para evitar duplicados.
+- Mantén el criterio específico para reducir falsos positivos. Ajusta según el tráfico real.

@@ -407,13 +407,29 @@
                   },
                   "webhook": {
                       "type": "object",
-                      "description": "Webhook schema (OpenAPI-compatible/JSON Schema).",
-                      "additionalProperties": true
+                      "description": "Webhook target configuration.",
+                      "additionalProperties": false,
+                      "properties": {
+                          "url": {
+                              "type": "string",
+                              "format": "uri"
+                          },
+                          "headers": {
+                              "type": "object",
+                              "description": "HTTP headers to include when calling the webhook.",
+                              "additionalProperties": {
+                                  "type": "string"
+                              },
+                              "example": {
+                                  "x-api-key": "your-secret"
+                              }
+                          }
+                      },
+                      "required": [
+                          "url"
+                      ]
                   },
                   "disableAI": {
-                      "type": "boolean"
-                  },
-                  "skipReply": {
                       "type": "boolean"
                   }
               },
@@ -522,9 +538,45 @@
                       "$ref": "#/components/responses/NotFound"
                   }
               }
-          },
+        },
+        "get": {
+            "summary": "List agents",
+            "responses": {
+                "200": {
+                    "description": "Success",
+                    "headers": {
+                        "RateLimit-Limit": {
+                            "$ref": "#/components/headers/RateLimit-Limit"
+                        },
+                        "RateLimit-Remaining": {
+                            "$ref": "#/components/headers/RateLimit-Remaining"
+                        },
+                        "RateLimit-Reset": {
+                            "$ref": "#/components/headers/RateLimit-Reset"
+                        }
+                    },
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AgentsListResponse"
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "$ref": "#/components/responses/Unauthorized"
+                }
+            }
+        }
+      },
+      "/v2/agents/{agent_id}": {
           "get": {
-              "summary": "List agents",
+              "summary": "Get agent",
+              "parameters": [
+                  {
+                      "$ref": "#/components/parameters/AgentId"
+                  }
+              ],
               "responses": {
                   "200": {
                       "description": "Success",
@@ -542,13 +594,16 @@
                       "content": {
                           "application/json": {
                               "schema": {
-                                  "$ref": "#/components/schemas/AgentsListResponse"
+                                  "$ref": "#/components/schemas/Agent"
                               }
                           }
                       }
                   },
                   "401": {
                       "$ref": "#/components/responses/Unauthorized"
+                  },
+                  "404": {
+                      "$ref": "#/components/responses/NotFound"
                   }
               }
           }

@@ -1,0 +1,117 @@
+---
+title: Human handoff
+description: Route conversations to a human by classifying them into a category and triggering a webhook.
+---
+
+Plugit.chat agents can automatically classify conversations into categories using AI. You provide a category with a clear criteria; when a conversation matches it, the agent assigns that category and triggers a webhook (if configured).
+
+A common use case is human handoff. Below is a minimal setup.
+
+## Step 1: Add a human_handoff category to your agent
+
+- **Goal**: classify conversations that need a person to take over.
+- **Criteria example**: "If the agent doesn’t know the answer, or the user asks to talk to a human."
+- **Optional**: set `disableAI: true` so the agent stops replying once classified, ensuring a person must continue.
+
+Create or update your agent with a category and webhook:
+
+```json
+POST https://api.plugit.chat/v2/agents
+Authorization: Bearer <API_KEY>
+Content-Type: application/json
+
+{
+  "title": "Support Bot",
+  "prompt": "Be helpful and concise",
+  "version": "lg-gpt-4.1-v3",
+  "categories": [
+    {
+      "title": "human_handoff",
+      "criteria": "If the agent doesn’t know what to answer, or user requests a human.",
+      "webhook": {
+        "url": "https://yourapp.example.com/webhooks/human-handoff",
+        "headers": { "x-api-key": "<secret>" }
+      },
+      "disableAI": true
+    }
+  ],
+  "default_language": "en"
+}
+```
+
+Or update an existing agent:
+
+```json
+PATCH https://api.plugit.chat/v2/agents
+Authorization: Bearer <API_KEY>
+Content-Type: application/json
+
+{
+  "id": "agt_123",
+  "categories": [
+    {
+      "title": "human_handoff",
+      "criteria": "If the agent doesn’t know what to answer, or user requests a human.",
+      "webhook": {
+        "url": "https://yourapp.example.com/webhooks/human-handoff",
+        "headers": { "x-api-key": "<secret>" }
+      },
+      "disableAI": true
+    }
+  ]
+}
+```
+
+Category schema fields:
+- `title` (required): category identifier, e.g. `human_handoff`.
+- `criteria` (recommended): natural language rule used by AI to classify.
+- `webhook.url` (recommended): where we POST classification events.
+- `webhook.headers` (optional): static headers to include.
+- `disableAI` (optional): when true, agent won’t continue answering after classification.
+
+## Step 2: Handle the webhook
+
+When a conversation is classified into `human_handoff`, we call your webhook with this JSON body:
+
+```json
+{
+  "agent": {
+    "id": "agt_123",
+    "external_id": "crm-42"
+  },
+  "name": "Jane Doe",
+  "phone_number": "+15551234567",
+  "summary": "User asked to speak with a human.",
+  "reason": "criteria_matched: user_requested_human",
+  "created_at": "2025-09-19T12:34:56Z"
+}
+```
+
+Example handler:
+
+```typescript
+// Example Express.js handler
+app.post("/webhooks/human-handoff", express.json(), async (req, res) => {
+  const { agent, name, phone_number, summary, reason, created_at } = req.body;
+  // TODO: route to the right team, enqueue for human agent, notify Slack, etc.
+  res.status(204).send();
+});
+```
+
+## Step 3: Track and route handoffs to the right people
+
+- Store each webhook event and display a queue of conversations requiring human attention.
+- Show the requester’s `name`, `phone_number`, `summary`, `reason`, and when (`created_at`).
+- Provide a one-click button in your backoffice to continue the chat in WhatsApp using the `phone_number`:
+
+```tsx
+// Example deep link button (web)
+const href = `https://api.whatsapp.com/send?phone=${encodeURIComponent(phone_number)}&text=${encodeURIComponent("Hi, I’m taking over your request.")}`;
+<a href={href} target="_blank" rel="noreferrer">Open WhatsApp chat</a>
+```
+
+## Notes
+
+- Webhook calls include any headers you define in the category config.
+- Use idempotency with POST/PATCH via `Idempotency-Key` to avoid duplicates.
+- Keep criteria specific to reduce false positives. Refine based on real traffic.
